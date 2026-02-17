@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>T & A's Wedding Notebook</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Patrick+Hand&family=Kalam:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:auto}
+body{font-family:'Kalam',cursive;background:#f5f0e8;color:#3a3226;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+
+/* SPINE */
+.notebook-spine{position:fixed;left:0;top:0;bottom:0;width:6px;background:linear-gradient(180deg,#8B6914,#6B4F12,#8B6914);z-index:1000;box-shadow:2px 0 6px rgba(0,0,0,0.15)}
+@media(min-width:600px){.notebook-spine{width:10px}}
+
+/* ===== COVER ===== */
+.cover{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;cursor:pointer;padding:2rem 1rem}
+
+/* Van Gogh thick brushstroke background via layered gradients + SVG texture */
+.cover-bg{position:absolute;inset:0;z-index:0}
+.cover-bg-paint{position:absolute;inset:0;background:
+  radial-gradient(ellipse at 20% 50%, #5b8fa8 0%, transparent 50%),
+  radial-gradient(ellipse at 80% 30%, #7faaba 0%, transparent 45%),
+  radial-gradient(ellipse at 50% 80%, #4a7a6a 0%, transparent 50%),
+  radial-gradient(ellipse at 30% 20%, #8bb8c8 0%, transparent 40%),
+  radial-gradient(ellipse at 70% 70%, #5a9878 0%, transparent 45%),
+  radial-gradient(ellipse at 10% 80%, #3a6858 0%, transparent 35%),
+  radial-gradient(ellipse at 90% 50%, #6aaa98 0%, transparent 40%),
+  linear-gradient(135deg, #4a8898 0%, #5a9a88 25%, #6aaa98 50%, #5b8fa8 75%, #4a7a88 100%);
+}
+
+/* Brushstroke texture overlay via SVG filter */
+.cover-bg-texture{position:absolute;inset:0;opacity:0.35}
+.cover-bg-texture svg{width:100%;height:100%}
+
+/* Impasto paint strokes via repeated elements */
+.paint-stroke{position:absolute;border-radius:50%;opacity:0.4;filter:blur(1px)}
+
+/* Blossoms on cover */
+.cover-bg-blossoms{position:absolute;inset:0;z-index:1}
+.cover-bg-blossoms svg{width:100%;height:100%;opacity:0.85}
+
+/* Floating petals */
+.petal{position:absolute;background:radial-gradient(ellipse,#f5e0e8 30%,#e8c8d4 70%,transparent 100%);border-radius:50% 50% 50% 0;opacity:0;animation:floatPetal linear infinite;z-index:2}
+@keyframes floatPetal{0%{opacity:0;transform:translateY(-20px) rotate(0deg) scale(0.8)}10%{opacity:0.8}50%{opacity:0.6}90%{opacity:0.4}100%{opacity:0;transform:translateY(100vh) rotate(540deg) scale(1.2)}}
+
+.cover-content{position:relative;z-index:10;text-align:center;animation:fadeInUp 1.2s ease-out}
+
+/* Decorative frame around title */
+.cover-frame{
+  border:3px solid rgba(255,255,255,0.35);
+  border-radius:8px;
+  padding:2rem 2.5rem;
+  position:relative;
+  background:rgba(60,80,70,0.25);
+  backdrop-filter:blur(2px);
+  box-shadow:0 0 40px rgba(0,0,0,0.15),inset 0 0 30px rgba(255,255,255,0.05);
+}
+.cover-frame::before,.cover-frame::after{
+  content:'';position:absolute;border:1px solid rgba(255,255,255,0.15);border-radius:4px;
+}
+.cover-frame::before{inset:6px}
+.cover-frame::after{inset:12px}
+
+.cover-ampersand{
+  font-family:'Caveat',cursive;font-size:clamp(1.4rem,4vw,2rem);
+  color:rgba(255,245,230,0.7);margin:0.2rem 0;display:block;
+}
+.cover-name{
+  font-family:'Caveat',cursive;font-size:clamp(2.8rem,9vw,5rem);
+  font-weight:700;color:#fff;line-height:1;
+  text-shadow:2px 3px 6px rgba(0,0,0,0.4),0 0 20px rgba(200,180,140,0.3);
+  letter-spacing:0.02em;
+}
+.cover-label{
+  font-family:'Patrick Hand',cursive;font-size:clamp(0.95rem,2.8vw,1.3rem);
+  color:rgba(255,245,230,0.8);letter-spacing:0.15em;text-transform:uppercase;
+  margin-top:0.8rem;
+}
+.cover-date{
+  font-family:'Caveat',cursive;font-size:clamp(1.1rem,3vw,1.6rem);
+  color:rgba(255,240,220,0.9);margin-top:1.5rem;
+  text-shadow:1px 1px 3px rgba(0,0,0,0.3);
+}
+.cover-tap{
+  font-family:'Patrick Hand',cursive;font-size:1rem;
+  color:rgba(255,245,230,0.5);animation:pulse 2s infinite;margin-top:1.5rem;
+}
+
+@keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:0.3}50%{opacity:0.8}}
+
+/* ===== PAGE TURN ANIMATION ===== */
+.page-container{
+  position:relative;
+  perspective:1200px;
+  overflow:hidden;
+}
+.page{
+  transform-origin:left center;
+  transition:transform 0.6s cubic-bezier(0.645,0.045,0.355,1),opacity 0.6s ease;
+  backface-visibility:hidden;
+  position:relative;
+}
+.page.turning-out{
+  transform:rotateY(-90deg);
+  opacity:0;
+  position:absolute;
+  top:0;left:0;right:0;
+  z-index:5;
+  pointer-events:none;
+}
+.page.turning-in{
+  animation:pageTurnIn 0.6s cubic-bezier(0.645,0.045,0.355,1) forwards;
+}
+@keyframes pageTurnIn{
+  0%{transform:rotateY(60deg);opacity:0}
+  100%{transform:rotateY(0deg);opacity:1}
+}
+/* Page shadow during turn */
+.page.turning-in::before{
+  content:'';position:absolute;top:0;left:0;width:30px;height:100%;
+  background:linear-gradient(90deg,rgba(0,0,0,0.08),transparent);
+  animation:shadowFade 0.6s ease forwards;
+  pointer-events:none;z-index:10;
+}
+@keyframes shadowFade{0%{opacity:1}100%{opacity:0}}
+
+/* ===== NOTEBOOK ===== */
+.notebook{display:none;padding-left:12px}
+@media(min-width:600px){.notebook{padding-left:16px}}
+
+/* INDEX */
+.index-page{max-width:600px;margin:0 auto;padding:2rem 1.2rem 3rem}
+.index-title{font-family:'Caveat',cursive;font-size:2.2rem;font-weight:700;color:#4a3728;text-align:center;margin-bottom:0.3rem}
+.index-line{width:60%;height:2px;margin:0 auto 1.5rem;background:linear-gradient(90deg,transparent,#b09878,transparent)}
+.index-list{list-style:none}
+.index-item{padding:0.85rem 0.5rem 0.85rem 0;border-bottom:1px dashed #d4c8b8;cursor:pointer;transition:background 0.2s;display:flex;align-items:center;gap:0.7rem}
+.index-item:active{background:rgba(200,180,150,0.15)}
+.index-num{font-family:'Caveat',cursive;font-size:1.5rem;font-weight:700;color:#b09878;min-width:2rem;text-align:center}
+.index-label{font-family:'Patrick Hand',cursive;font-size:1.2rem;color:#4a3728;flex:1}
+.index-arrow{color:#b09878;font-size:1.2rem;transition:transform 0.2s}
+.index-item:hover .index-arrow{transform:translateX(4px)}
+.index-icon{font-size:1.3rem;min-width:1.5rem;text-align:center}
+
+/* SECTIONS */
+.section{max-width:600px;margin:0 auto;padding:1.5rem 1.2rem 3rem;background-image:repeating-linear-gradient(transparent,transparent 31px,#e8ddd0 31px,#e8ddd0 32px);background-size:100% 32px;min-height:80vh;position:relative;display:none}
+.section.active{display:block}
+.section::before{content:'';position:absolute;left:-4px;top:0;bottom:0;width:2px;background:#e8a0a0;opacity:0.5}
+.section-header{display:flex;align-items:center;gap:0.6rem;margin-bottom:1.2rem;padding-bottom:0.5rem;border-bottom:2px solid #d4c8b8}
+.section-icon{font-size:1.5rem}
+.section-title{font-family:'Caveat',cursive;font-size:1.8rem;font-weight:700;color:#4a3728}
+.nav-bar{position:sticky;top:0;z-index:50;background:rgba(245,240,232,0.95);backdrop-filter:blur(4px);padding:0.5rem 0;margin-bottom:0.5rem;border-bottom:1px solid #e8ddd0;display:flex;align-items:center;justify-content:center;gap:1.8rem}
+.nav-bar a{font-family:'Caveat',cursive;font-size:1.6rem;color:#b09878;text-decoration:none;cursor:pointer;padding:0.1rem 0.5rem;border-radius:4px;transition:color 0.2s;line-height:1}
+.nav-bar a:hover{color:#4a3728}
+.nav-bar .nav-contents{font-size:1.4rem;color:#b09878}
+.nav-bar .nav-contents:hover{color:#4a3728}
+.nav-bar .nav-disabled{opacity:0.2;pointer-events:none}
+.page-number{text-align:right;font-family:'Caveat',cursive;font-size:0.95rem;color:#c4b8a8;padding:0 0.5rem 0.5rem 0;margin-top:-0.3rem}
+
+/* CARDS */
+.card{background:rgba(255,252,245,0.6);border:1px solid #e8ddd0;border-radius:4px;padding:1rem;margin-bottom:1rem;position:relative;transform:rotate(-0.3deg)}
+.card:nth-child(even){transform:rotate(0.2deg)}
+.card-name{font-family:'Caveat',cursive;font-size:1.35rem;font-weight:600;color:#4a3728;margin-bottom:0.25rem}
+.card-detail{font-family:'Kalam',cursive;font-size:0.95rem;color:#6b5a4e;line-height:1.6;margin-bottom:0.2rem}
+.card-detail a{color:#7a6040;text-decoration:underline;text-decoration-style:wavy;text-underline-offset:3px}
+.card-tag{display:inline-block;font-family:'Patrick Hand',cursive;font-size:0.85rem;background:#f0e8d8;color:#8a7a6a;padding:0.15rem 0.5rem;border-radius:3px;margin-right:0.3rem;margin-top:0.3rem}
+.card-rating{font-size:0.85rem;color:#d4a028}
+.card-highlight{background:rgba(232,200,160,0.2);border-left:3px solid #d4a028}
+
+/* TIMELINE */
+.timeline{position:relative;padding-left:1.5rem}
+.timeline::before{content:'';position:absolute;left:0.4rem;top:0;bottom:0;width:2px;background:linear-gradient(180deg,#d4a028,#b09878,#d4a028)}
+.timeline-day{position:relative;margin-bottom:2rem}
+.timeline-dot{position:absolute;left:-1.3rem;top:0.3rem;width:12px;height:12px;background:#d4a028;border-radius:50%;border:2px solid #f5f0e8}
+.timeline-date{font-family:'Caveat',cursive;font-size:1.4rem;font-weight:700;color:#4a3728;margin-bottom:0.3rem}
+.timeline-events{list-style:none}
+.timeline-event{padding:0.6rem 0;border-bottom:1px dashed #e8ddd0}
+.timeline-event:last-child{border-bottom:none}
+.event-name{font-family:'Caveat',cursive;font-size:1.2rem;font-weight:600;color:#6b5a4e}
+.event-detail{font-family:'Kalam',cursive;font-size:0.9rem;color:#8a7a6a}
+
+/* ETIQUETTE */
+.etiquette-item{padding:0.6rem 0;border-bottom:1px dashed #e8ddd0;font-size:1rem;line-height:1.7;display:flex;gap:0.5rem;align-items:flex-start}
+.etiquette-icon{font-size:1.1rem;min-width:1.5rem;text-align:center;margin-top:0.1rem}
+
+/* TABLE */
+.meal-table{width:100%;border-collapse:collapse;font-family:'Patrick Hand',cursive;font-size:1.05rem;margin-top:0.5rem}
+.meal-table th{text-align:left;padding:0.5rem 0.4rem;border-bottom:2px solid #d4c8b8;color:#4a3728;font-family:'Caveat',cursive;font-size:1.2rem}
+.meal-table td{padding:0.45rem 0.4rem;border-bottom:1px dashed #e8ddd0;color:#6b5a4e}
+
+/* NOTE */
+.note{background:#fdf8e8;border-left:3px solid #d4a028;padding:0.7rem 0.8rem;margin:1rem 0;font-size:0.95rem;color:#6b5a4e;border-radius:0 4px 4px 0;transform:rotate(0deg) !important}
+.note-label{font-family:'Caveat',cursive;font-weight:700;color:#d4a028;font-size:1.1rem}
+
+.doodle-divider{text-align:center;color:#d4c8b8;font-size:1.2rem;letter-spacing:0.5rem;margin:1rem 0}
+.footer{text-align:center;padding:2rem 1rem;font-family:'Caveat',cursive;font-size:1.2rem;color:#b09878}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:#f5f0e8}::-webkit-scrollbar-thumb{background:#d4c8b8;border-radius:3px}
+</style>
+</head>
+<body>
+<div class="notebook-spine"></div>
+
+<!-- ===== COVER ===== -->
+<div class="cover" id="cover" onclick="openNotebook()">
+  <div class="cover-bg">
+    <!-- Painted background -->
+    <div class="cover-bg-paint"></div>
+
+    <!-- Brushstroke texture via SVG -->
+    <div class="cover-bg-texture">
+      <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+        <defs>
+          <filter id="paint">
+            <feTurbulence type="turbulence" baseFrequency="0.015 0.008" numOctaves="4" seed="3" result="noise"/>
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="12" xChannelSelector="R" yChannelSelector="G" result="displaced"/>
+            <feTurbulence type="fractalNoise" baseFrequency="0.04 0.02" numOctaves="5" seed="7" result="brushNoise"/>
+            <feColorMatrix type="saturate" values="0" in="brushNoise" result="bw"/>
+            <feBlend in="bw" in2="displaced" mode="overlay"/>
+          </filter>
+          <filter id="impasto">
+            <feTurbulence type="turbulence" baseFrequency="0.03" numOctaves="3" seed="5"/>
+            <feColorMatrix type="saturate" values="0"/>
+            <feComponentTransfer><feFuncA type="discrete" tableValues="0.3 0.5 0.3 0.4 0.6 0.3"/></feComponentTransfer>
+          </filter>
+        </defs>
+        <!-- Thick directional brushstrokes -->
+        <rect width="100%" height="100%" filter="url(#paint)" fill="#5a9a88" opacity="0.5"/>
+        <!-- Impasto texture overlay -->
+        <rect width="100%" height="100%" filter="url(#impasto)" fill="#fff" opacity="0.12"/>
+        <!-- Visible brush direction lines -->
+        <g stroke="rgba(255,255,255,0.06)" stroke-width="1" fill="none">
+          <path d="M0,50 Q100,40 200,55 Q300,70 400,50"/>
+          <path d="M0,150 Q120,135 250,155 Q350,168 500,145"/>
+          <path d="M0,250 Q80,240 180,260 Q280,275 400,250"/>
+          <path d="M0,350 Q100,338 220,355 Q320,370 450,348"/>
+          <path d="M0,450 Q90,440 200,458 Q310,472 420,448"/>
+          <path d="M0,550 Q110,535 230,555 Q340,570 460,545"/>
+          <path d="M0,650 Q80,642 190,658 Q300,672 420,648"/>
+          <path d="M0,750 Q100,738 210,755 Q320,768 440,745"/>
+        </g>
+      </svg>
+    </div>
+
+    <!-- Painted blossoms -->
+    <div class="cover-bg-blossoms">
+      <svg viewBox="0 0 400 800" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <filter id="sketch" x="-5%" y="-5%" width="110%" height="110%">
+            <feTurbulence type="turbulence" baseFrequency="0.025" numOctaves="3" seed="2" result="noise"/>
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="3" xChannelSelector="R" yChannelSelector="G"/>
+          </filter>
+          <filter id="paintBlob">
+            <feTurbulence type="turbulence" baseFrequency="0.05" numOctaves="2" seed="8" result="n"/>
+            <feDisplacementMap in="SourceGraphic" in2="n" scale="4"/>
+          </filter>
+        </defs>
+
+        <!-- Thick painted branches -->
+        <path d="M-30,650 Q60,540 110,400 Q140,320 170,260 Q195,210 245,155 Q285,110 360,50"
+              fill="none" stroke="#3d5a40" stroke-width="7" opacity="0.7" filter="url(#sketch)" stroke-linecap="round"/>
+        <path d="M-30,650 Q60,540 110,400 Q140,320 170,260 Q195,210 245,155 Q285,110 360,50"
+              fill="none" stroke="#5a7a50" stroke-width="4" opacity="0.5" filter="url(#sketch)" stroke-linecap="round"/>
+
+        <!-- Sub branches - thicker -->
+        <path d="M110,400 Q155,365 230,350" fill="none" stroke="#3d5a40" stroke-width="5" opacity="0.6" stroke-linecap="round" filter="url(#sketch)"/>
+        <path d="M170,260 Q130,225 85,205" fill="none" stroke="#3d5a40" stroke-width="4" opacity="0.55" stroke-linecap="round" filter="url(#sketch)"/>
+        <path d="M245,155 Q275,175 330,165" fill="none" stroke="#3d5a40" stroke-width="4" opacity="0.5" stroke-linecap="round" filter="url(#sketch)"/>
+
+        <!-- Second main branch -->
+        <path d="M430,720 Q340,590 290,490 Q255,410 215,350 Q185,305 155,285"
+              fill="none" stroke="#3d5a40" stroke-width="6" opacity="0.6" filter="url(#sketch)" stroke-linecap="round"/>
+        <path d="M290,490 Q250,470 210,480" fill="none" stroke="#3d5a40" stroke-width="3.5" opacity="0.5" stroke-linecap="round" filter="url(#sketch)"/>
+
+        <!-- Small twig branches -->
+        <path d="M85,205 Q65,190 50,170" fill="none" stroke="#4a6a45" stroke-width="2.5" opacity="0.4" stroke-linecap="round"/>
+        <path d="M330,165 Q350,150 370,130" fill="none" stroke="#4a6a45" stroke-width="2" opacity="0.4" stroke-linecap="round"/>
+        <path d="M210,480 Q190,490 170,510" fill="none" stroke="#4a6a45" stroke-width="2.5" opacity="0.4" stroke-linecap="round"/>
+
+        <!-- ===== PAINTED BLOSSOMS - thicker, more painterly ===== -->
+        <g filter="url(#paintBlob)">
+          <!-- Flower 1 - large -->
+          <circle cx="110" cy="395" r="18" fill="rgba(250,240,245,0.7)"/>
+          <ellipse cx="96" cy="385" rx="9" ry="10" fill="#faf5f8" stroke="#ddb8c8" stroke-width="1"/>
+          <ellipse cx="124" cy="385" rx="9" ry="10" fill="#faf5f8" stroke="#ddb8c8" stroke-width="1"/>
+          <ellipse cx="98" cy="405" rx="9" ry="10" fill="#f5eef4" stroke="#ddb8c8" stroke-width="1"/>
+          <ellipse cx="122" cy="405" rx="9" ry="10" fill="#f5eef4" stroke="#ddb8c8" stroke-width="1"/>
+          <ellipse cx="110" cy="390" rx="9" ry="10" fill="#faf5f8" stroke="#ddb8c8" stroke-width="1"/>
+          <circle cx="110" cy="395" r="5" fill="#daa520"/>
+          <circle cx="108" cy="393" r="1.5" fill="#c89418"/>
+          <circle cx="112" cy="396" r="1.2" fill="#c89418"/>
+
+          <!-- Flower 2 -->
+          <circle cx="245" cy="150" r="16" fill="rgba(250,240,245,0.7)"/>
+          <ellipse cx="233" cy="142" rx="8" ry="9" fill="#faf5f8" stroke="#ddb8c8" stroke-width="1"/>
+          <ellipse cx="257" cy="142" rx="8" ry="9" fill="#faf5f8" stroke="#ddb8c8" stroke-width="1"/>
+          <ellipse cx="235" cy="158" rx="8" ry="9" fill="#f5eef4" stroke="#ddb8c8" stroke-width="1"/>
+          <ellipse cx="255" cy="158" rx="8" ry="9" fill="#f5eef4" stroke="#ddb8c8" stroke-width="1"/>
+          <ellipse cx="245" cy="147" rx="8" ry="9" fill="#faf5f8" stroke="#ddb8c8" stroke-width="1"/>
+          <circle cx="245" cy="150" r="4.5" fill="#daa520"/>
+
+          <!-- Flower 3 -->
+          <circle cx="170" cy="255" r="17" fill="rgba(250,240,245,0.65)"/>
+          <ellipse cx="157" cy="246" rx="8.5" ry="9.5" fill="#faf5f8" stroke="#ddb8c8" stroke-width="1"/>
+          <ellipse cx="183" cy="246" rx="8.5" ry="9.5" fill="#faf5f8" stroke="#ddb8c8" stroke-width="1"/>
+          <ellipse cx="159" cy="264" rx="8.5" ry="9.5" fill="#f5eef4" stroke="#ddb8c8" stroke-width="1"/>
+          <ellipse cx="181" cy="264" rx="8.5" ry="9.5" fill="#f5eef4" stroke="#ddb8c8" stroke-width="1"/>
+          <ellipse cx="170" cy="252" rx="8.5" ry="9.5" fill="#faf5f8" stroke="#ddb8c8" stroke-width="1"/>
+          <circle cx="170" cy="255" r="4.5" fill="#daa520"/>
+
+          <!-- Flower 4 - top right -->
+          <circle cx="330" cy="80" r="14" fill="rgba(250,240,245,0.6)"/>
+          <ellipse cx="320" cy="73" rx="7" ry="8" fill="#faf5f8" stroke="#ddb8c8" stroke-width="0.8"/>
+          <ellipse cx="340" cy="73" rx="7" ry="8" fill="#faf5f8" stroke="#ddb8c8" stroke-width="0.8"/>
+          <ellipse cx="322" cy="87" rx="7" ry="8" fill="#f5eef4" stroke="#ddb8c8" stroke-width="0.8"/>
+          <ellipse cx="338" cy="87" rx="7" ry="8" fill="#f5eef4" stroke="#ddb8c8" stroke-width="0.8"/>
+          <ellipse cx="330" cy="77" rx="7" ry="8" fill="#faf5f8" stroke="#ddb8c8" stroke-width="0.8"/>
+          <circle cx="330" cy="80" r="3.5" fill="#daa520"/>
+
+          <!-- Flower 5 - bottom -->
+          <circle cx="290" cy="485" r="16" fill="rgba(250,240,245,0.65)"/>
+          <ellipse cx="278" cy="477" rx="8" ry="9" fill="#faf5f8" stroke="#ddb8c8" stroke-width="1"/>
+          <ellipse cx="302" cy="477" rx="8" ry="9" fill="#faf5f8" stroke="#ddb8c8" stroke-width="1"/>
+          <ellipse cx="280" cy="493" rx="8" ry="9" fill="#f5eef4" stroke="#ddb8c8" stroke-width="1"/>
+          <ellipse cx="300" cy="493" rx="8" ry="9" fill="#f5eef4" stroke="#ddb8c8" stroke-width="1"/>
+          <ellipse cx="290" cy="482" rx="8" ry="9" fill="#faf5f8" stroke="#ddb8c8" stroke-width="1"/>
+          <circle cx="290" cy="485" r="4.5" fill="#daa520"/>
+
+          <!-- Flower 6 - left -->
+          <circle cx="85" cy="200" r="14" fill="rgba(250,240,245,0.6)"/>
+          <ellipse cx="75" cy="193" rx="7" ry="8" fill="#faf5f8" stroke="#ddb8c8" stroke-width="0.8"/>
+          <ellipse cx="95" cy="193" rx="7" ry="8" fill="#faf5f8" stroke="#ddb8c8" stroke-width="0.8"/>
+          <ellipse cx="77" cy="207" rx="7" ry="8" fill="#f5eef4" stroke="#ddb8c8" stroke-width="0.8"/>
+          <ellipse cx="93" cy="207" rx="7" ry="8" fill="#f5eef4" stroke="#ddb8c8" stroke-width="0.8"/>
+          <ellipse cx="85" cy="197" rx="7" ry="8" fill="#faf5f8" stroke="#ddb8c8" stroke-width="0.8"/>
+          <circle cx="85" cy="200" r="3.5" fill="#daa520"/>
+
+          <!-- Flower 7 - new bottom left -->
+          <circle cx="50" cy="530" r="13" fill="rgba(250,240,245,0.55)"/>
+          <ellipse cx="41" cy="524" rx="6.5" ry="7.5" fill="#faf5f8" stroke="#ddb8c8" stroke-width="0.8"/>
+          <ellipse cx="59" cy="524" rx="6.5" ry="7.5" fill="#faf5f8" stroke="#ddb8c8" stroke-width="0.8"/>
+          <ellipse cx="43" cy="536" rx="6.5" ry="7.5" fill="#f5eef4" stroke="#ddb8c8" stroke-width="0.8"/>
+          <ellipse cx="57" cy="536" rx="6.5" ry="7.5" fill="#f5eef4" stroke="#ddb8c8" stroke-width="0.8"/>
+          <ellipse cx="50" cy="527" rx="6.5" ry="7.5" fill="#faf5f8" stroke="#ddb8c8" stroke-width="0.8"/>
+          <circle cx="50" cy="530" r="3" fill="#daa520"/>
+
+          <!-- Flower 8 - right middle -->
+          <circle cx="365" cy="280" r="12" fill="rgba(250,240,245,0.5)"/>
+          <ellipse cx="357" cy="274" rx="6" ry="7" fill="#faf5f8" stroke="#ddb8c8" stroke-width="0.7"/>
+          <ellipse cx="373" cy="274" rx="6" ry="7" fill="#faf5f8" stroke="#ddb8c8" stroke-width="0.7"/>
+          <ellipse cx="358" cy="286" rx="6" ry="7" fill="#f5eef4" stroke="#ddb8c8" stroke-width="0.7"/>
+          <ellipse cx="372" cy="286" rx="6" ry="7" fill="#f5eef4" stroke="#ddb8c8" stroke-width="0.7"/>
+          <ellipse cx="365" cy="277" rx="6" ry="7" fill="#faf5f8" stroke="#ddb8c8" stroke-width="0.7"/>
+          <circle cx="365" cy="280" r="3" fill="#daa520"/>
+        </g>
+
+        <!-- Buds - painterly -->
+        <ellipse cx="225" cy="345" rx="6" ry="10" fill="#e0c8d4" opacity="0.7" transform="rotate(-20,225,345)" filter="url(#paintBlob)"/>
+        <ellipse cx="155" cy="283" rx="5" ry="9" fill="#e0c8d4" opacity="0.7" transform="rotate(15,155,283)" filter="url(#paintBlob)"/>
+        <ellipse cx="355" cy="55" rx="5" ry="8" fill="#e0c8d4" opacity="0.6" transform="rotate(-10,355,55)" filter="url(#paintBlob)"/>
+        <ellipse cx="280" cy="170" rx="5" ry="9" fill="#e0c8d4" opacity="0.7" transform="rotate(20,280,170)" filter="url(#paintBlob)"/>
+        <ellipse cx="60" cy="170" rx="4" ry="7" fill="#e0c8d4" opacity="0.5" transform="rotate(-25,60,170)" filter="url(#paintBlob)"/>
+        <ellipse cx="190" cy="505" rx="5" ry="8" fill="#e0c8d4" opacity="0.6" transform="rotate(10,190,505)" filter="url(#paintBlob)"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Floating petals -->
+  <div class="petal" style="left:8%;animation-duration:9s;animation-delay:0s;width:12px;height:12px;"></div>
+  <div class="petal" style="left:25%;animation-duration:12s;animation-delay:1.5s;width:16px;height:16px;"></div>
+  <div class="petal" style="left:42%;animation-duration:10s;animation-delay:3s;width:10px;height:10px;"></div>
+  <div class="petal" style="left:58%;animation-duration:13s;animation-delay:0.5s;width:14px;height:14px;"></div>
+  <div class="petal" style="left:72%;animation-duration:11s;animation-delay:4s;width:11px;height:11px;"></div>
+  <div class="petal" style="left:88%;animation-duration:10s;animation-delay:2s;width:13px;height:13px;"></div>
+  <div class="petal" style="left:15%;animation-duration:14s;animation-delay:5.5s;width:9px;height:9px;"></div>
+  <div class="petal" style="left:50%;animation-duration:8s;animation-delay:6.5s;width:15px;height:15px;"></div>
+  <div class="petal" style="left:35%;animation-duration:11s;animation-delay:7s;width:10px;height:10px;"></div>
+
+  <div class="cover-content">
+    <div class="cover-frame">
+      <div class="cover-name">Tanya</div>
+      <span class="cover-ampersand">&amp;</span>
+      <div class="cover-name">Aakarsh</div>
+      <div class="cover-label">Wedding Notebook</div>
+    </div>
+    <div class="cover-date">February 18 &ndash; 20, 2026 &middot; New Delhi</div>
+    <div class="cover-tap">tap to open &#10047;</div>
+  </div>
+</div>
+
+<!-- ===== NOTEBOOK ===== -->
+<div class="notebook" id="notebook">
+  <div class="page-container" id="pageContainer">
+    <!-- INDEX -->
+    <div id="page-index" class="page active-page">
+      <div class="index-page">
+        <div style="text-align:center;margin-bottom:0.8rem"><a onclick="backToCover()" style="font-family:Patrick Hand,cursive;font-size:1.05rem;color:#8a7a6a;cursor:pointer;text-decoration:none">&larr; Tanya &amp; Aakarsh</a></div>
+        <div class="index-title">&#10047; Contents &#10047;</div>
+        <div class="index-line"></div>
+        <ul class="index-list" id="indexList"></ul>
+        <div class="doodle-divider">~ &#10047; ~</div>
+        <div class="note">
+          <span class="note-label">Psst!</span> - We put together this little notebook so you don&rsquo;t have to wonder about the basic information. Tap any topic above. For everything else there is always the WhatsApp Group &lsquo;T&amp;A - Emotional Support Baraatis &#128131;&#128378;&rsquo;
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTIONS (built by JS) -->
+    <div id="sections"></div>
+  </div>
+
+  <div class="footer">
+    made with &#9825; for our favourite people<br>
+    <span style="font-size:0.9rem;color:#d4c8b8;">~ Tanya &amp; Aakarsh ~</span>
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  DATA - EDIT THIS JSON TO UPDATE ALL CONTENT
+// ============================================================
+var METRO_ICON = '<img src="https://upload.wikimedia.org/wikipedia/commons/6/65/Delhi_Metro_logo.svg" alt="Metro" style="width:1.2em;height:1.2em;vertical-align:middle;display:inline-block">';
+
+var DATA = {
+  events: [
+    { date: "18th February 2026", day: "Wednesday", events: [
+      { name: "Cocktail & Sangeet", time: "8:00 pm", address: "Aster Hall, Orana Aurnum, Mayapuri", mapLink:"https://maps.app.goo.gl/qc14d8vKBMdPmsGf6", dress: "Indo-Western / Western / Glitz", notes: "" }
+    ]},
+    { date: "19th February 2026", day: "Thursday", events: [
+      { name: "Cricket Match", time: "12:30 pm", address: "Smash 2 Play Turf, Patel Nagar", mapLink:"https://maps.app.goo.gl/UAwdVkJaFmEyh3Ag9", dress: "Comfortable sportswear", notes: "Dilli Dhurandhars vs. Mighty Mauryans! Check the <a onclick=\"navigateTo('cricket')\" style=\"color:#7a6040;text-decoration:underline;text-decoration-style:wavy;cursor:pointer\">match rules</a>." },
+      { name: "Ladies Tambola Afternoon \ud83c\udfb0", time: "2:00 pm", address: "2nd Floor, Anila Boutique Hotels", mapLink:"https://maps.google.com/?q=Anila+Boutique+Hotels+Naraina+Vihar", dress: "", notes: "" }
+    ]},
+    { date: "20th February 2026", day: "Friday", events: [
+      { name: "Anand Karaj", time: "11:00 am", address: "Gurdwara Sri Guru Singh Sabha, Vasant Kunj", mapLink:"https://maps.app.goo.gl/5zBkjTSnuvnmRFti8", dress: "Head covering required", notes: "Covering your head is mandatory. Scarves available at the entrance. Other etiquettes <a onclick=\"navigateTo('etiquette')\" style=\"color:#7a6040;text-decoration:underline;text-decoration-style:wavy;cursor:pointer\">here</a>." },
+      { name: "Band Baaja Baraat", time: "9:00 pm onwards", address: "William 2, Grand Dreams, Mayapuri", mapLink:"https://maps.app.goo.gl/xTprE6aevZMfaj4W6", dress: "Indian", notes: "9:00 pm Baraat Arrival \u00b7 11:00 pm Pheras" }
+    ]}
+  ],
+  gurudwaraEtiquettes: [
+    { icon: "\ud83e\uddce", text: "Sitting in the Darbar Hall in the presence of Sri Guru Granth Sahib is on the floor except for senior citizens and those who can\u2019t sit on the floor." },
+    { icon: "\ud83e\udde3", text: "Heads shall be covered at all times in the presence of Sri Guru Granth Sahib. Scarves are usually available at the entrance if you need one." },
+    { icon: "\ud83d\udcf5", text: "No talking or using phones when Recitation/Gurbani Vichar/Kirtan is in progress." },
+    { icon: "\ud83d\udeab", text: "No person shall come to the Gurdwara premises intoxicated." },
+    { icon: "\ud83d\udc5f", text: "Shoes off before you go in there\u2019s a counter where you can leave them." },
+    { icon: "\ud83d\udc57", text: "Keep it modest cover your shoulders and knees. Indian or western, both are fine." },
+    { icon: "\ud83d\udeb6", text: "If you walk up to the Guru Granth Sahib, go clockwise around it." }
+  ],
+  hotel: {
+    name: "Anila Boutique Hotels", address: "A-15, Shindi Colony, Naraina Vihar, Naraina, New Delhi 110028",
+    phone: "011 4747 8000", mapLink: "https://maps.google.com/?q=Anila+Boutique+Hotels+Naraina+Vihar",
+    checkIn: "12:45 pm (on paper), 12:00 pm usually. Earlier on a case-by-case basis.", checkOut: "11:00 am (strict)", wifi: "Remeber to take your WiFi Coupons during Check-In", notes: "PLACEHOLDER_ADDITIONAL_NOTES"
+  },
+  hotelMeals: [
+    { day: "18th Feb (Wednesday)", meals: [
+      { meal: "Lunch", time: "2:00 pm \u2013 4:00 pm" },
+      { meal: "Hi-Tea", time: "6:00 pm" }
+    ]},
+    { day: "19th Feb (Thursday)", meals: [
+      { meal: "Breakfast", time: "8:00 am \u2013 10:30 am" },
+      { meal: "Lunch", time: "1:00 pm \u2013 3:00 pm" },
+      { meal: "Hi-Tea", time: "5:30 pm" }
+    ]},
+    { day: "20th Feb (Friday)", meals: [
+      { meal: "Breakfast", time: "8:00 am \u2013 10:30 am" },
+      { meal: "Hi-Tea", time: "5:30 pm" }
+    ]}
+  ],
+  metro: [
+    { name: "Naraina Vihar Metro Station", line: "Pink Line", distance: "5 min walk from hotel", notes: "Connects to Rajiv Chowk (Yellow Line) via interchange at INA or Rajouri Garden (Blue Line).", mapLink: "https://maps.app.goo.gl/ctpaCNsP13phbWVFA" },
+    { name: "Rajouri Garden Metro Station", line: "Blue Line", distance: "~10 min by auto from hotel", notes: "Direct connectivity to Chandni Chowk, Connaught Place, and Noida.", mapLink: "https://maps.app.goo.gl/n3sXxUYQ282QcQM2A" }
+  ],
+  placesToEat: [
+    { name: "Ikk Punjab", type: "Punjabi", distance: "Rajouri Garden (Pink Line)", rating: "", highlight: "Solid neighbourhood Punjabi food. No frills, just good stuff.", mapLink: "https://maps.app.goo.gl/mepgR23FBtumSNbC7" },
+    { name: "Prem Di Hatti", type: "Chole Bhature", distance: "Rajouri Garden (Pink Line)", rating: "", highlight: "Morning chole bhature spot. Locals swear by it.", mapLink: "https://maps.app.goo.gl/EL4piSkgMoBMFDYT9" },
+    { name: "Defence Bakery", type: "Bakery", distance: "Rajouri Garden (Pink Line)", rating: "", highlight: "Bread, biscuits, rusks. Old-school Delhi bakery.", mapLink: "https://maps.app.goo.gl/hhp66N8eARDCDwSo9" },
+    { name: "JUGGERNAUT", type: "South Indian / Multi-cuisine", distance: "Rajouri Garden (Blue Line)", rating: "", highlight: "Big menu, reliable food. Good for a proper sit-down meal.", mapLink: "https://maps.app.goo.gl/q1zdbTcuXaBB1s4j7" },
+    { name: "Sardar Ji Malai Chaap Wale", type: "Street Food", distance: "Rajouri Garden (Pink Line)", rating: "", highlight: "Malai chaap done right. If you know, you know.", mapLink: "https://maps.app.goo.gl/xQ9sRn6p6yczRsFs9" }
+  ],
+  placesToShop: [
+    { name: "Rajouri Garden Market", distance: "Rajouri Garden (Blue Line)", highlight: "If you need a last-minute outfit, this is the place. Ethnic wear, shoes, accessories it\u2019s got everything and then some.", mapLink: "https://maps.app.goo.gl/VWxvrnedSyB5LDM99" },
+    { name: "Sarojini Nagar Market", distance: "Sarojini Nagar (Pink Line)", highlight: "The holy grail of bargain shopping. Branded surplus stuff at silly prices. You will need to haggle. Hard.", mapLink: "https://maps.app.goo.gl/WxZUMwKcNqbbc8NL6" }
+  ],
+  beautySalons: [
+    { name: "Geetanjali Salon", distance: "7 min walk", rating: "4.5", highlight: "", mapLink: "https://maps.app.goo.gl/Ny52QaeRRcXttw4w8" },
+    { name: "Nick\u2019s Salon \u2013 Makeup Studio & Academy", distance: "5 min walk", rating: "4.7", highlight: "", mapLink: "https://maps.app.goo.gl/CgAdyJZjNJFmTnZSA" },
+    { name: "The Balayage \u2013 Unisex Salon", distance: "5 min walk", rating: "4.5", highlight: "", mapLink: "https://maps.app.goo.gl/DfMQH9fGPAYusRUA9" },
+    { name: "CUT&STYLE Salon", distance: "6 min walk", rating: "4.7", highlight: "", mapLink: "https://maps.app.goo.gl/HXCGrXjLLyFfUVs28" }
+  ],
+  mustEat: [
+    { name: "Bukhara (ITC Maurya)", type: "Fine Dining", area: "Dhaula Kuan (Airport Line)", highlight: "Frontier-style cooking. The Dal Bukhara alone is worth the trip. Book ahead, it fills up.", mapLink: "https://maps.app.goo.gl/iDmHtx4erFcBe1WR8" },
+    { name: "Gulati Restaurant", type: "North Indian", area: "Khan Market (Violet Line)", highlight: "Three generations, one family, and a butter chicken recipe that hasn\u2019t changed. <a href='http://cntraveller.in/story/best-butter-chicken-in-new-delhi-as-picked-by-the-citys-foodies-moti-mahal-gulatis-pandararoad/' target='_blank' style='color:#7a6040;text-decoration:underline;text-decoration-style:wavy'>CN Traveller agrees</a>.", mapLink: "https://maps.app.goo.gl/BHhFH9QMhUPt98Cz8" },
+    { name: "Sita Ram Diwan Chand", type: "Chole Bhature", area: "Rajiv Chowk (Blue/Yellow Line)", highlight: "The OG chole bhature in Delhi. Queue up, don\u2019t overthink it. <a href='https://www.goya.in/blog/a-checklist-for-delhis-ultimate-comfort-food-chhole-bhature-guide-to-delhi' target='_blank' style='color:#7a6040;text-decoration:underline;text-decoration-style:wavy'>More on Delhi\u2019s chole bhature scene</a>.", mapLink: "https://maps.app.goo.gl/Kgt3iWXPd31mD77UA" },
+    { name: "Wengers", type: "Bakery / Cafe", area: "Rajiv Chowk (Blue/Yellow Line)", highlight: "CP institution since 1926. Patties, pastries, and a vibe that hasn\u2019t changed in decades.", mapLink: "https://maps.app.goo.gl/trDXMa5Xab5zHT6a6" },
+    { name: "Kake Di Hatti", type: "Vegetarian Punjabi", area: "Chandni Chowk (Yellow Line)", highlight: "The naans here are comically large and absolutely unreal. Chole bhature too. Pure veg, pure joy.", mapLink: "https://maps.app.goo.gl/UGZrone4kRTAmsNh6" },
+    { name: "Natraj Dahi Bhalla", type: "Street Food / Chaat", area: "Chandni Chowk (Yellow Line)", highlight: "Open since 1940. The dahi bhalle and aloo tikki are unbeatable. Go hungry.", mapLink: "https://maps.app.goo.gl/vPggkGuA1cJZqEVb9" },
+    { name: "Jama Masjid Food Walk", type: "Street Food", area: "Jama Masjid (Violet Line)", highlight: "Kebabs at Karim\u2019s, nihari at Al Jawahar, jalebi from the old shops. Walk around and eat everything. <a href='https://travelseewrite.com/jama-masjid-delhi-food-walk/' target='_blank' style='color:#7a6040;text-decoration:underline;text-decoration-style:wavy'>A detailed food walk guide</a>.", mapLink: "https://maps.app.goo.gl/szZKXudWxqL6Aafq6" },
+    { name: "The Big Chill Cafe", type: "Italian / Desserts", area: "Khan Market (Violet Line)", highlight: "Every Delhiite\u2019s comfort place. Pasta, pizza, cheesecake. For when you need a break from all the butter chicken.", mapLink: "https://maps.app.goo.gl/ogfFjo5nu8rQTHKr7" }
+  ],
+  mustDo: [
+    { name: "Chandni Chowk", area: "Chandni Chowk (Yellow Line)", highlight: "Shah Jahan built this road in 1650. Spice lanes, old food joints, gurdwaras, Jain temples, all crammed into one glorious, chaotic stretch.", mapLink: "https://maps.app.goo.gl/Ajvqv7BAjLTQAqvj7" },
+    { name: "National Rail Museum", area: "Durgabai Deshmukh South Campus (Pink Line)", highlight: "Old trains, joy rides, and a surprisingly good time. Works whether you\u2019re 8 or 80.", mapLink: "https://maps.app.goo.gl/AbfhPfSjgRXesTZTA" },
+    { name: "Khan Market", area: "Khan Market (Violet Line)", highlight: "Bookshops, boutiques, good coffee. Delhi\u2019s version of a lazy afternoon well spent.", mapLink: "https://maps.app.goo.gl/dbFF1AfoG3Ay5Sz49" },
+    { name: "Connaught Place (CP)", area: "Rajiv Chowk (Blue/Yellow Line)", highlight: "The British built the arcades in the 1930s. After Partition, refugee families filled the corridors with shops and food. Now it\u2019s Delhi\u2019s living room.", mapLink: "https://maps.app.goo.gl/KamChJWswnAH3hcp9" }
+  ],
+  hiddenGems: [
+    { name: "Sundar Nursery", area: "JLN Stadium (Violet Line)", highlight: "Soft sunlight, long walks, picnics, quiet romance. Right next to Humayun\u2019s Tomb but most people walk right past it.", mapLink: "https://maps.app.goo.gl/Eiit8bVp4dYxRs8X6" },
+    { name: "Lodhi Garden", area: "Jor Bagh (Yellow Line)", highlight: "Journaling, people-watching, sitting under old trees. The kind of place where you lose track of time and don\u2019t mind.", mapLink: "https://maps.app.goo.gl/xBhwuXHXg4iiMU2p9" },
+    { name: "Dilli Haat", area: "INA (Yellow/Pink Line)", highlight: "Handicrafts, souvenirs, textiles from every corner of India and the best momos you\u2019ll find anywhere.", mapLink: "https://maps.app.goo.gl/2MMJSKuzaWCXGp8XA" },
+    { name: "Nizamuddin Dargah", area: "JLN Stadium (Violet Line)", highlight: "Go on a Thursday night for the qawwali. Live Sufi music in a candlelit courtyard. One of those things you don\u2019t forget.", mapLink: "https://maps.app.goo.gl/urvKnHxjT27Hh9We9" },
+    { name: "Teen Murti Bhavan", area: "Lok Kalyan Marg (Yellow Line)", highlight: "Nehru\u2019s residence, now a museum. The Pradhanmantri Sangrahalaya next door covers every PM since independence worth a quiet afternoon.", mapLink: "https://maps.app.goo.gl/UMajCwCtFAbKMczi6" }
+  ],
+  cricketRules: {
+    title: "Dilli Dhurandhars vs. Mighty Mauryans",
+    matchRules: [
+      { label: "Format", text: "8 overs per innings." },
+      { label: "Bowling", text: "Max 2 overs for up to 2 players; others 1 over each." },
+      { label: "Wickets", text: "7 wickets per side." },
+      { label: "Last Man Standing", text: "Once the 6th wicket falls, the last batter stays in but cannot run singles must score in boundaries or even numbers to stay at the striker\u2019s end." },
+      { label: "Extras", text: "1 run per extra with a re-bowl." }
+    ],
+    scoringRules: [
+      { label: "Ahead of Half-line (Sides)", text: "2 runs." },
+      { label: "Behind Half-line (Any side)", text: "1 run." },
+      { label: "Straight Boundary", text: "4 or 6 runs." },
+      { label: "Ceiling", text: "Not out. You can hit the ceiling and run normally. If the ball hits the boundary after touching the ceiling, it counts as a 4 (no 6s allowed off the ceiling)." }
+    ]
+  }
+};
+
+// ============================================================
+var SECTIONS = [
+  { id:"events",    icon:"\ud83c\udf89", label:"Event Details",           render:renderEvents },
+  { id:"hotel",     icon:"\ud83c\udfe8", label:"Hotel & Timings",         render:renderHotelAndMeals },
+  { id:"etiquette", icon:"\ud83d\ude4f", label:"Gurudwara Etiquettes",    render:renderEtiquettes },
+  { id:"cricket",   icon:"\ud83c\udfcf", label:"Cricket Rules",           render:renderCricket },
+  { id:"metro",     icon:"METRO", label:"Nearest Metro Stations",  render:renderMetro },
+  { id:"mustdo",    icon:"\u2728",       label:"Must Dos in Delhi",       render:renderMustDo },
+  { id:"food",      icon:"\ud83c\udf5c", label:"Places to Eat",           render:renderFood },
+  { id:"shop",      icon:"\ud83d\udecd\ufe0f", label:"Places to Shop",          render:renderPlacesToShop },
+  { id:"salons",    icon:"\ud83d\udc87", label:"Beauty Salons Nearby",    render:renderSalons },
+  { id:"lastpage",  icon:"\ud83d\udc9b", label:"One Last Thing...",        render:renderLastPage }
+];
+
+// ============================================================
+//  RENDERERS
+// ============================================================
+function renderEvents(){
+  var h='<div class="timeline">';
+  DATA.events.forEach(function(day){
+    h+='<div class="timeline-day"><div class="timeline-dot"></div>';
+    h+='<div class="timeline-date">'+day.date+' \u00b7 '+day.day+'</div><ul class="timeline-events">';
+    day.events.forEach(function(e){
+      h+='<li class="timeline-event"><div class="event-name">'+e.name+'</div>';
+      h+='<div class="event-detail">\u23f0 '+e.time+'</div>';
+      h+='<div class="event-detail"><a href="'+e.mapLink+'" target="_blank" style="color:#7a6040;text-decoration:underline;text-decoration-style:wavy">\ud83d\udccd '+e.address+'</a></div>';
+      if(e.dress)h+='<div class="event-detail">\ud83d\udc57 '+e.dress+'</div>';
+      if(e.notes)h+='<div class="note" style="margin-top:0.4rem"><span class="note-label">Note:</span> '+e.notes+'</div>';
+      h+='</li>';
+    });
+    h+='</ul></div>';
+  });
+  return h+'</div>';
+}
+function renderEtiquettes(){
+  return DATA.gurudwaraEtiquettes.map(function(e){
+    return '<div class="etiquette-item"><span class="etiquette-icon">'+e.icon+'</span><span>'+e.text+'</span></div>';
+  }).join('');
+}
+function renderCricket(){
+  var r = DATA.cricketRules;
+  var html = '<div style="text-align:center;margin-bottom:1rem"><div style="font-family:Caveat,cursive;font-size:1.6rem;font-weight:700;color:#4a3728">\ud83c\udfcf ' + r.title + '</div><div style="font-family:Patrick Hand,cursive;font-size:1rem;color:#8a7a6a">February 19th \u00b7 12:30 pm \u00b7 <a href="https://maps.app.goo.gl/UAwdVkJaFmEyh3Ag9" target="_blank" style="color:#7a6040;text-decoration:underline;text-decoration-style:wavy">\ud83d\udccd Smash 2 Play Turf, Patel Nagar</a></div></div>';
+  html += '<div style="font-family:Caveat,cursive;font-size:1.3rem;font-weight:700;color:#4a3728;margin-bottom:0.5rem">Match Rules</div>';
+  r.matchRules.forEach(function(rule){
+    html += '<div class="etiquette-item"><span class="etiquette-icon">\ud83c\udfcf</span><span><strong>' + rule.label + ':</strong> ' + rule.text + '</span></div>';
+  });
+  html += '<div class="doodle-divider">~ \u2743 ~</div>';
+  html += '<div style="font-family:Caveat,cursive;font-size:1.3rem;font-weight:700;color:#4a3728;margin-bottom:0.5rem">Scoring & Net Rules</div>';
+  r.scoringRules.forEach(function(rule){
+    html += '<div class="etiquette-item"><span class="etiquette-icon">\ud83d\udcca</span><span><strong>' + rule.label + ':</strong> ' + rule.text + '</span></div>';
+  });
+  html += '<div class="note" style="margin-top:1rem"><span class="note-label">Game on!</span> May the best team win. There may or may not be a real trophy at stake.</div>';
+  return html;
+}
+function renderHotelAndMeals(){
+  var h=DATA.hotel;
+  var html = '<div class="card card-highlight"><div class="card-name">'+h.name+'</div>'+
+    '<div class="card-detail"><a href="'+h.mapLink+'" target="_blank" style="color:#7a6040;text-decoration:underline;text-decoration-style:wavy">\ud83d\udccd '+h.address+'</a></div>'+
+    '<div class="card-detail">\ud83d\udcde '+h.phone+'</div>'+
+    '<div class="card-detail">\ud83d\udd11 Check-in: '+h.checkIn+'</div>'+
+    '<div class="card-detail">\ud83d\udd11 Check-out: '+h.checkOut+'</div>'+
+    '<div class="card-detail">\ud83d\udcf6 WiFi: '+h.wifi+'</div>'+
+    (h.notes&&h.notes.indexOf('PLACEHOLDER')===-1?'<div class="card-detail">\ud83d\udcdd '+h.notes+'</div>':'')+'</div>';
+
+  html += '<div class="doodle-divider">~ \u2743 ~</div>';
+  html += '<div style="font-family:Caveat,cursive;font-size:1.4rem;font-weight:700;color:#4a3728;margin-bottom:0.3rem">\ud83c\udf7d\ufe0f Meal Timings</div>';
+  html += '<div style="font-family:Kalam,cursive;font-size:0.9rem;color:#8a7a6a;margin-bottom:0.8rem">All meals are served on the 2nd floor.</div>';
+
+  DATA.hotelMeals.forEach(function(day){
+    html += '<div class="card"><div class="card-name">'+day.day+'</div>';
+    html += '<table class="meal-table"><tbody>';
+    day.meals.forEach(function(m){
+      html += '<tr><td>'+m.meal+'</td><td>'+m.time+'</td></tr>';
+    });
+    html += '</tbody></table></div>';
+  });
+
+  return html;
+}
+function renderMetro(){
+  return DATA.metro.map(function(m){
+    return '<div class="card"><div class="card-name">' + METRO_ICON + ' <a href="'+m.mapLink+'" target="_blank" style="color:#7a6040;text-decoration:underline;text-decoration-style:wavy">'+m.name+'</a></div>'+
+      '<div class="card-tag">'+m.line+'</div>'+
+      '<div class="card-detail" style="margin-top:0.4rem">\ud83d\udccf '+m.distance+'</div>'+
+      '<div class="card-detail">\ud83d\udca1 '+m.notes+'</div></div>';
+  }).join('')+'<div class="note"><span class="note-label">Quick tip:</span> Get the "Delhi Metro Rail" app it\u2019ll save you a lot of guesswork.</div>';
+}
+function renderPlaceCards(items,showRating){
+  if(showRating===undefined)showRating=true;
+  return items.map(function(p){
+    return '<div class="card"><div class="card-name">'+p.name+'</div>'+
+      (p.type?'<div class="card-tag">'+p.type+'</div>':'')+
+      (p.area?'<div class="card-tag">' + METRO_ICON + ' ' +p.area+'</div>':'')+
+      (p.distance?'<div class="card-tag">'+(p.distance.indexOf('walk')!==-1?'\ud83d\udeb6 ':METRO_ICON+' ')+p.distance+'</div>':'')+
+      (showRating&&p.rating?'<div class="card-rating" style="margin-top:0.3rem">\u2605 '+p.rating+'</div>':'')+
+      (p.hours?'<div class="card-detail" style="margin-top:0.3rem">\ud83d\udd50 '+p.hours+'</div>':'')+
+      (p.highlight?'<div class="card-detail" style="margin-top:0.3rem">'+p.highlight+'</div>':'')+
+      (p.phone&&p.phone.length>0?'<div class="card-detail">\ud83d\udcde '+p.phone+'</div>':'')+
+      (p.mapLink?'<a href="'+p.mapLink+'" target="_blank" class="card-tag" style="text-decoration:none;margin-top:0.3rem;display:inline-block">\ud83d\udccd Maps</a>':'')+
+      '</div>';
+  }).join('');
+}
+function renderPlacesToEat(){return renderPlaceCards(DATA.placesToEat)}
+function renderPlacesToShop(){return renderPlaceCards(DATA.placesToShop,false)}
+function renderFood(){
+  var html = '<div style="font-family:Kalam,cursive;font-size:0.9rem;color:#8a7a6a;margin-bottom:1rem;line-height:1.6">Delhi\u2019s food tells you who lived here. Old family recipes, street vendors who\u2019ve been at it for decades, hole-in-the-wall joints that somehow always have a queue. Here are some favourites.</div>';
+  html += '<div style="font-family:Caveat,cursive;font-size:1.4rem;font-weight:700;color:#4a3728;margin-bottom:0.6rem">\ud83c\udf1f Must Eat in Delhi</div>';
+  html += renderPlaceCards(DATA.mustEat, false);
+  html += '<div class="doodle-divider">~ \u2743 ~</div>';
+  html += '<div style="font-family:Caveat,cursive;font-size:1.4rem;font-weight:700;color:#4a3728;margin-bottom:0.6rem">\ud83d\udccd Near the Hotel</div>';
+  html += renderPlaceCards(DATA.placesToEat);
+  
+  return html;
+}
+function renderSalons(){return renderPlaceCards(DATA.beautySalons)+'<div class="note"><span class="note-label">Timings:</span> All salons run 10:00 am to 9:00 pm daily.</div>'}
+function renderMustDo(){
+  var html = '<div style="font-family:Kalam,cursive;font-size:0.9rem;color:#8a7a6a;margin-bottom:1rem;line-height:1.6">Delhi has been built, destroyed, and rebuilt seven times. Every part of the city is standing on top of something older. Here are a few places worth seeing between all the wedding chaos.</div>';
+  html += renderPlaceCards(DATA.mustDo,false);
+  html += '<div class="doodle-divider">~ \u2743 ~</div>';
+  html += '<div style="font-family:Caveat,cursive;font-size:1.4rem;font-weight:700;color:#4a3728;margin-bottom:0.3rem">\ud83d\udc8e Hidden Gems</div>';
+  html += '<div style="font-family:Kalam,cursive;font-size:0.9rem;color:#8a7a6a;margin-bottom:0.8rem;line-height:1.6">The stuff that won\u2019t show up on a top-10 list but will probably be the thing you remember most.</div>';
+  html += renderPlaceCards(DATA.hiddenGems,false);
+  html += '<div class="note"><span class="note-label">Getting around:</span> Metro is the fastest way to most of these. Uber and Ola work well too.</div>';
+  return html;
+}
+
+function renderLastPage(){
+  var rules = [
+    { icon:"\ud83d\udc83", text:"Dance like nobody\u2019s watching. (They are. And they\u2019re recording.)" },
+    { icon:"\ud83d\udcf8", text:"Take 42 photos. At least 3 should be of us." },
+    { icon:"\ud83c\udf5d", text:"The food should be good. Pace yourself or don\u2019t. We won\u2019t judge." },
+    { icon:"\ud83e\udd43", text:"Stay hydrated. Water counts. Lime Soda also counts. The other stuff... technically counts too." },
+    { icon:"\ud83d\udc5f", text:"Wear comfortable shoes. You\u2019ll thank us at 2 AM." },
+    { icon:"\ud83e\udd33", text:"Selfies with the couple are mandatory. Awkward angles preferred." },
+    { icon:"\u2764\ufe0f", text:"Most importantly have the time of your life. This is YOUR party too!" }
+  ];
+
+  var html = '<div style="text-align:center;margin-bottom:1.5rem">' +
+    '<div style="font-family:Caveat,cursive;font-size:1.8rem;font-weight:700;color:#4a3728;margin-bottom:0.3rem">The Unofficial Rules</div>' +
+    '<div style="font-family:Patrick Hand,cursive;font-size:1rem;color:#8a7a6a">(Strictly to be followed)</div></div>';
+
+  rules.forEach(function(r){
+    html += '<div class="etiquette-item"><span class="etiquette-icon">' + r.icon + '</span><span>' + r.text + '</span></div>';
+  });
+
+  html += '<div class="doodle-divider" style="margin:1.5rem 0">~ \u2743 ~</div>';
+
+  html += '<div style="text-align:center;padding:1rem 0.5rem">' +
+    '<div style="font-family:Caveat,cursive;font-size:1.6rem;font-weight:700;color:#4a3728;margin-bottom:0.8rem">Thank You!</div>' +
+    '<div style="font-family:Kalam,cursive;font-size:1rem;color:#6b5a4e;line-height:1.8;max-width:420px;margin:0 auto">' +
+    'The fact that you\u2019re here reading this, packing a bag, making the trip means everything to us.' +
+    '<br><br>' +
+    'Hopefully a few moments stay with you from these three days. None of it would mean anything without you lot.' +
+    '<br><br>';
+    html += 'See you there.' +
+    '<br><br>' +
+    '<span style="font-family:Caveat,cursive;font-size:1.3rem;font-weight:600;color:#4a3728">With all our love,</span>' +
+    '<br><span style="font-family:Caveat,cursive;font-size:1.5rem;font-weight:700;color:#4a3728">Tanya & Aakarsh</span>' +
+    '<br><span style="font-size:1.5rem">\ud83d\udc9b</span>' +
+    '</div></div>';
+
+  return html;
+}
+
+// ============================================================
+//  PAGE NAVIGATION WITH TURN ANIMATION
+// ============================================================
+var currentPage = 'index';
+var isAnimating = false;
+
+function navigateTo(pageId){
+  if(isAnimating || pageId === currentPage) return;
+  isAnimating = true;
+
+  var oldPage = document.getElementById('page-' + currentPage);
+  var newPage = document.getElementById('page-' + pageId);
+  if(!oldPage || !newPage) { isAnimating = false; return; }
+
+  // Turn old page out
+  oldPage.classList.add('turning-out');
+  oldPage.style.display = 'block';
+
+  // Show and turn new page in
+  newPage.style.display = 'block';
+  newPage.classList.add('turning-in');
+
+  window.scrollTo({ top: 0, behavior: 'instant' });
+
+  setTimeout(function(){
+    oldPage.classList.remove('turning-out');
+    oldPage.style.display = 'none';
+    newPage.classList.remove('turning-in');
+    currentPage = pageId;
+    isAnimating = false;
+  }, 620);
+}
+
+function backToCover(){
+  document.getElementById('notebook').style.display='none';
+  var cover=document.getElementById('cover');
+  cover.style.display='flex';
+  cover.style.transform='none';
+  cover.style.opacity='1';
+  window.scrollTo(0,0);
+  currentPage='index';
+}
+
+function openNotebook(){
+  var cover = document.getElementById('cover');
+  cover.style.transition = 'transform 0.8s cubic-bezier(0.645,0.045,0.355,1), opacity 0.8s ease';
+  cover.style.transformOrigin = 'left center';
+  cover.style.transform = 'perspective(1200px) rotateY(-100deg)';
+  cover.style.opacity = '0';
+
+  setTimeout(function(){
+    cover.style.display = 'none';
+    document.getElementById('notebook').style.display = 'block';
+    document.getElementById('page-index').style.display = 'block';
+  }, 500);
+}
+
+// ============================================================
+//  BUILD
+// ============================================================
+function buildIndex(){
+  var list = document.getElementById('indexList');
+  SECTIONS.forEach(function(s, i){
+    var li = document.createElement('li');
+    li.className = 'index-item';
+    li.onclick = function(){ navigateTo(s.id); };
+    var iconHtml = s.icon === 'METRO' ? METRO_ICON : s.icon;
+    li.innerHTML = '<span class="index-num">'+(i+1)+'.</span>'+
+      '<span class="index-icon">'+iconHtml+'</span>'+
+      '<span class="index-label">'+s.label+'</span>'+
+      '<span class="index-arrow">\u203a</span>';
+    list.appendChild(li);
+  });
+}
+
+function buildSections(){
+  var container = document.getElementById('sections');
+  var allIds = ['index'].concat(SECTIONS.map(function(s){return s.id}));
+  SECTIONS.forEach(function(s, i){
+    var div = document.createElement('div');
+    div.id = 'page-' + s.id;
+    div.className = 'page';
+    div.style.display = 'none';
+    var sectionIdx = i + 1; // position in allIds (0 is index)
+    var prevId = allIds[sectionIdx - 1];
+    var nextId = (sectionIdx < allIds.length - 1) ? allIds[sectionIdx + 1] : null;
+    var navHtml = '<div class="nav-bar">' +
+      '<a onclick="navigateTo(\'' + prevId + '\')">\u2039</a>' +
+      '<a class="nav-contents" onclick="navigateTo(\'index\')">\u273f</a>' +
+      (nextId ? '<a onclick="navigateTo(\'' + nextId + '\')">\u203a</a>' : '<a class="nav-disabled">\u203a</a>') +
+      '</div><div class="page-number">' + (i+1) + ' / ' + SECTIONS.length + '</div>';
+    var bottomNav = nextId ?
+      '<div style="text-align:center;padding:1rem 0"><a onclick="navigateTo(\'' + nextId + '\')" style="font-family:Patrick Hand,cursive;font-size:1.15rem;color:#8a7a6a;cursor:pointer;text-decoration:none">' + SECTIONS[i+1].label + ' \u2192</a></div>' :
+      '<div style="text-align:center;padding:1rem 0;font-family:Caveat,cursive;font-size:1.2rem;color:#b09878">\u2743 You\u2019ve reached the last page! \u2743<br><a onclick="navigateTo(\'index\')" style="font-family:Patrick Hand,cursive;font-size:1.05rem;color:#8a7a6a;cursor:pointer;text-decoration:none">\u2190 back to contents</a></div>';
+    div.innerHTML = '<div class="section active">' + navHtml +
+      '<div class="section-header"><span class="section-icon">'+(s.icon==='METRO'?METRO_ICON:s.icon)+'</span><span class="section-title">'+s.label+'</span></div>'+
+      s.render()+
+      '<div class="doodle-divider">~ \u2743 ~</div>'+
+      bottomNav +
+      '</div>';
+    container.appendChild(div);
+  });
+}
+
+buildIndex();
+buildSections();
+
+// Swipe navigation
+var touchStartX = 0;
+var touchStartY = 0;
+var touchEndX = 0;
+var touchEndY = 0;
+var minSwipe = 60;
+
+document.addEventListener('touchstart', function(e){
+  touchStartX = e.changedTouches[0].screenX;
+  touchStartY = e.changedTouches[0].screenY;
+}, {passive: true});
+
+document.addEventListener('touchend', function(e){
+  touchEndX = e.changedTouches[0].screenX;
+  touchEndY = e.changedTouches[0].screenY;
+  var dx = touchEndX - touchStartX;
+  var dy = touchEndY - touchStartY;
+  if(Math.abs(dx) < minSwipe || Math.abs(dy) > Math.abs(dx)) return;
+  // Only allow swipe on section pages, not index or cover
+  if(currentPage === 'index') return;
+  var sectionIds = SECTIONS.map(function(s){return s.id});
+  var idx = sectionIds.indexOf(currentPage);
+  if(idx === -1) return;
+  if(dx < 0 && idx < sectionIds.length - 1){
+    navigateTo(sectionIds[idx + 1]);
+  } else if(dx > 0 && idx > 0){
+    navigateTo(sectionIds[idx - 1]);
+  } else if(dx > 0 && idx === 0){
+    navigateTo('index');
+  }
+}, {passive: true});
+</script>
+</body>
+</html>
